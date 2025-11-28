@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>موقع دعم فني</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet">
+<style>
+* {margin:0; padding:0; box-sizing: border-box; font-family: 'Cairo', sans-serif;}
+body {background: #f4f6f8;}
+.container {width: 100%; max-width: 1200px; margin: auto;}
+.box {background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);}
+input, textarea, button {width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 15px;}
+button {cursor: pointer; border: none; background: #007bff; color: #fff; transition: 0.3s;}
+button:hover {background: #0056b3;}
+.logout {background: #ff4d4d;}
+.chat-layout {display: flex; height: 90vh; margin-top:20px;}
+.chat-sidebar {width: 300px; background: #fff; border-left: 1px solid #ccc; padding: 20px; display:flex; flex-direction: column; border-radius: 15px; margin-left:20px;}
+.messages {flex:1; overflow-y:auto; margin-bottom:10px;}
+.msg {padding:10px; border-radius:8px; margin-bottom:8px; max-width:90%; cursor:pointer;}
+.msg.staff {background:#c7eaff; align-self:flex-start;}
+.msg.user {background:#d7ffc7; align-self:flex-end;}
+.chat-main {flex:1; display:flex; justify-content:center; align-items:center; font-size:20px; color:#888;}
+.login-container {width:100%; height:100vh; display:flex; justify-content:center; align-items:center;}
+</style>
+</head>
+<body>
+
+<div class="login-container" id="choosePage">
+    <div class="box">
+        <h2 style="text-align:center; margin-bottom:15px;">اختر نوع الدخول</h2>
+        <button onclick="showStaffLogin()">تسجيل دخول</button>
+        <button onclick="showUserRegister()">إنشاء حساب مستخدم</button>
+    </div>
+</div>
+
+<div class="login-container" id="loginPage" style="display:none;">
+    <div class="box">
+        <h2 style="text-align:center; margin-bottom:15px;">تسجيل دخول / مستخدم</h2>
+        <input type="text" id="staffUser" placeholder="اسم المستخدم" />
+        <input type="password" id="staffPass" placeholder="كلمة المرور" />
+        <button onclick="loginStaffOrUser()">دخول</button>
+        <button onclick="backHome()">رجوع</button>
+    </div>
+</div>
+
+<div class="login-container" id="registerPage" style="display:none;">
+    <div class="box">
+        <h2 style="text-align:center; margin-bottom:15px;">إنشاء حساب مستخدم</h2>
+        <input type="text" id="regFirst" placeholder="الاسم الأول" />
+        <input type="text" id="regLast" placeholder="الاسم الأخير" />
+        <button onclick="registerUser()">إنشاء الحساب</button>
+        <button onclick="backHome()">رجوع</button>
+    </div>
+</div>
+
+<div class="login-container" id="userPage" style="display:none;">
+    <div class="box">
+        <h2 style="text-align:center; margin-bottom:15px;">اكتب مشكلتك</h2>
+        <textarea id="problem" placeholder="اكتب مشكلتك"></textarea>
+        <button onclick="sendProblem()">إرسال</button>
+        <button class="logout" onclick="logout()">تسجيل خروج</button>
+    </div>
+</div>
+
+<div class="chat-layout" id="staffChat" style="display:none;">
+    <div class="chat-main" id="chatMain">اختر رسالة للرد</div>
+    <div class="chat-sidebar" id="chatBox">
+        <h3>صندوق المحادثات</h3>
+        <div class="messages" id="msgArea"></div>
+        <textarea id="replyBox" placeholder="اكتب الرد..."></textarea>
+        <button onclick="sendReply()">إرسال الرد</button>
+        <button class="logout" onclick="logout()">تسجيل خروج</button>
+    </div>
+</div>
+
+<script>
+let problemData = [];
+let userName = "";
+let selectedMsg = null;
+let users = [];
+
+function backHome(){
+    document.getElementById("choosePage").style.display = "flex";
+    document.getElementById("loginPage").style.display = "none";
+    document.getElementById("registerPage").style.display = "none";
+}
+function showStaffLogin(){
+    document.getElementById("choosePage").style.display = "none";
+    document.getElementById("loginPage").style.display = "flex";
+}
+function showUserRegister(){
+    document.getElementById("choosePage").style.display = "none";
+    document.getElementById("registerPage").style.display = "flex";
+}
+
+function loginStaffOrUser(){
+    let u = document.getElementById("staffUser").value;
+    let p = document.getElementById("staffPass").value;
+
+    if(u === "alsada123" && p === "alsada456"){
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("staffChat").style.display = "flex";
+    } else {
+        let foundUser = users.find(us => us.user === u);
+        if(foundUser){
+            userName = foundUser.name;
+            document.getElementById("loginPage").style.display = "none";
+            document.getElementById("userPage").style.display = "flex";
+        } else {
+            alert("بيانات خاطئة، أو مستخدم غير موجود");
+        }
+    }
+}
+
+function registerUser(){
+    let f = document.getElementById("regFirst").value;
+    let l = document.getElementById("regLast").value;
+
+    if(f === '' || l === '') return alert("املأ كل الخانات");
+
+    userName = f + " " + l;
+    let usernameKey = f.toLowerCase() + l.toLowerCase();
+    users.push({user: usernameKey, name: userName});
+
+    alert("تم إنشاء الحساب! يمكنك الآن تسجيل الدخول كمستخدم");
+
+    document.getElementById("registerPage").style.display = "none";
+    document.getElementById("loginPage").style.display = "flex";
+    document.getElementById("staffUser").value = usernameKey;
+}
+
+function sendProblem(){
+    let pr = document.getElementById("problem").value;
+    if(pr === '') return alert("اكتب المشكلة");
+
+    let area = document.getElementById("msgArea");
+    let userMsg = document.createElement("div");
+    userMsg.className = "msg user";
+    userMsg.innerText = pr + "\n— المرسل: " + userName;
+    userMsg.onclick = () => selectMessage(userMsg);
+    area.appendChild(userMsg);
+
+    document.getElementById("problem").value = '';
+}
+
+function selectMessage(msgDiv){
+    selectedMsg = msgDiv;
+    document.getElementById("chatMain").innerText = "جارٍ الرد على الرسالة...";
+}
+
+function sendReply(){
+    if(!selectedMsg) return alert("اختر رسالة للرد عليها أولاً");
+    let reply = document.getElementById("replyBox").value;
+    if(!reply) return;
+
+    let area = document.getElementById("msgArea");
+    let staffMsg = document.createElement("div");
+    staffMsg.className = "msg staff";
+    staffMsg.innerText = reply;
+    area.insertBefore(staffMsg, selectedMsg.nextSibling);
+
+    document.getElementById("replyBox").value = '';
+    selectedMsg = null;
+    document.getElementById("chatMain").innerText = "اختر رسالة للرد";
+}
+
+function logout(){
+    location.reload();
+}
+</script>
+
+</body>
+</html>
